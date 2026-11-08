@@ -2,7 +2,6 @@
 #include "Cafe/HW/Latte/Renderer/Vulkan/VulkanAPI.h"
 
 #include <vector>
-#include <limits>
 
 namespace FrameGenVk
 {
@@ -59,7 +58,7 @@ namespace FrameGenVk
 
 		VkDescriptorSetLayoutCreateInfo descriptorInfo{};
 		descriptorInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-		descriptorInfo.bindingCount = static_cast<uint32_t>(std::size(bindings));
+		descriptorInfo.bindingCount = 3;
 		descriptorInfo.pBindings = bindings;
 		VkResult result = vkCreateDescriptorSetLayout(device, &descriptorInfo, nullptr, descriptorSetLayout);
 		if (result != VK_SUCCESS)
