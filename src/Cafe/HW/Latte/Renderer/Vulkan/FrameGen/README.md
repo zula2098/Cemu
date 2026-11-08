@@ -16,6 +16,11 @@ Vulkan frame-generation experiment.
 
 ## Descriptor and pipeline contract
 
+`FrameGenVk::CreateBlendPipelineLayout()` creates the matching descriptor-set
+layout (two combined image samplers and one storage image) and pipeline layout
+(with a single 32-bit compute push constant). The caller owns both objects and
+must destroy the pipeline layout before its descriptor-set layout.
+
 Set 0:
 - binding 0: combined image sampler for the previous frame
 - binding 1: combined image sampler for the current frame
