@@ -1,5 +1,7 @@
 #include "Cafe/HW/Latte/Renderer/Vulkan/FrameGenVk.h"
 
+#include <vector>
+
 namespace FrameGenVk
 {
 	Capabilities QueryCapabilities(VkPhysicalDevice physicalDevice, uint32_t graphicsQueueFamily)
@@ -10,13 +12,7 @@ namespace FrameGenVk
 
 		VkPhysicalDeviceFeatures features{};
 		vkGetPhysicalDeviceFeatures(physicalDevice, &features);
-		result.computeShader = features.shaderStorageImageWriteWithoutFormat || features.shaderStorageImageReadWithoutFormat || features.shaderStorageImageWriteWithoutFormat == VK_FALSE;
-		// computeShader is a core feature and is queried separately from storage-image format support.
-		result.computeShader = features.shaderStorageImageWriteWithoutFormat || features.shaderStorageImageReadWithoutFormat || features.geometryShader || features.tessellationShader || features.vertexPipelineStoresAndAtomics || features.fragmentStoresAndAtomics || features.shaderImageGatherExtended || features.shaderStorageImageMultisample || features.shaderStorageImageExtendedFormats || features.shaderStorageImageReadWithoutFormat || features.shaderStorageImageWriteWithoutFormat;
-		result.computeShader = VK_TRUE; // replaced below using VkPhysicalDeviceFeatures2-independent core query
-		VkPhysicalDeviceProperties properties{};
-		vkGetPhysicalDeviceProperties(physicalDevice, &properties);
-		(void)properties;
+		result.computeShader = features.computeShader == VK_TRUE;
 
 		uint32_t queueFamilyCount = 0;
 		vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, nullptr);
