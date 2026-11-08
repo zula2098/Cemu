@@ -19,6 +19,14 @@ namespace FrameGenVk
 		}
 	};
 
+	// Creates the descriptor-set and pipeline layouts required by blend.comp.
+	// The caller owns both returned Vulkan objects and must destroy the pipeline
+	// layout before destroying the descriptor-set layout.
+	VkResult CreateBlendPipelineLayout(
+		VkDevice device,
+		VkDescriptorSetLayout* descriptorSetLayout,
+		VkPipelineLayout* pipelineLayout);
+
 	Capabilities QueryCapabilities(VkPhysicalDevice physicalDevice, uint32_t graphicsQueueFamily);
 
 	// Creates a compute pipeline from caller-provided SPIR-V. The caller owns the
