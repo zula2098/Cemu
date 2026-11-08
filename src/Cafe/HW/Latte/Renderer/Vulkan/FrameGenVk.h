@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
+#include <span>
 
 namespace FrameGenVk
 {
@@ -19,4 +20,21 @@ namespace FrameGenVk
 	};
 
 	Capabilities QueryCapabilities(VkPhysicalDevice physicalDevice, uint32_t graphicsQueueFamily);
+
+	// Creates a compute pipeline from caller-provided SPIR-V. The caller owns the
+	// pipeline layout and is responsible for descriptor-set layouts and barriers.
+	VkResult CreateComputePipeline(
+		VkDevice device,
+		std::span<const uint32_t> spirv,
+		VkPipelineLayout pipelineLayout,
+		VkPipeline* pipeline);
+
+	// Records a basic compute dispatch. Bind descriptor sets and issue the
+	// required resource barriers in the caller's command buffer.
+	bool RecordDispatch(
+		VkCommandBuffer commandBuffer,
+		VkPipeline pipeline,
+		uint32_t groupCountX,
+		uint32_t groupCountY,
+		uint32_t groupCountZ = 1);
 }
