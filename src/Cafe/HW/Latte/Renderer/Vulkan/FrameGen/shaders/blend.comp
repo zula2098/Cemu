@@ -1,0 +1,32 @@
+#version 450
+
+// Experimental 2x frame-generation stage.
+// This is a temporal blend baseline, NOT motion-compensated optical flow.
+// It is intentionally simple so the Vulkan resource/pipeline path can be
+// validated before adding the more expensive motion-estimation stages.
+
+layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
+
+layout(set = 0, binding = 0) uniform sampler2D previousFrame;
+layout(set = 0, binding = 1) uniform sampler2D currentFrame;
+layout(set = 0, binding = 2, rgba8) writeonly uniform image2D interpolatedFrame;
+
+layout(push_constant) uniform InterpolationParams
+{
+    float blendFactor;
+} params;
+
+void main()
+{
+    ivec2 pixel = ivec2(gl_GlobalInvocationID.xy);
+    ivec2 outputSize = imageSize(interpolatedFrame);
+
+    if (pixel.x >= outputSize.x || pixel.y >= outputSize.y)
+        return;
+
+    vec2 uv = (vec2(pixel) + vec2(0.5)) / vec2(outputSize);
+    vec4 a = texture(previousFrame, uv);
+    vec4 b = texture(currentFrame, uv);
+
+    imageStore(interpolatedFrame, pixel, mix(a, b, clamp(params.blendFactor, 0.0, 1.0)));
+}
