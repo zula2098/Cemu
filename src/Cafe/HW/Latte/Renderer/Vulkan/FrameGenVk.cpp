@@ -10,9 +10,10 @@ namespace FrameGenVk
 		if (physicalDevice == VK_NULL_HANDLE)
 			return result;
 
-		VkPhysicalDeviceFeatures features{};
-		vkGetPhysicalDeviceFeatures(physicalDevice, &features);
-		result.computeShader = features.computeShader == VK_TRUE;
+		VkPhysicalDeviceFeatures2 features{};
+		features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+		vkGetPhysicalDeviceFeatures2(physicalDevice, &features);
+		result.computeShader = features.features.computeShader == VK_TRUE;
 
 		uint32_t queueFamilyCount = 0;
 		vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, nullptr);
