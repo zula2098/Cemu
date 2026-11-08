@@ -643,6 +643,7 @@ VulkanRenderer::VulkanRenderer()
 	deviceFeatures.occlusionQueryPrecise = m_featureControl.deviceFeatures.occlusion_query_precise;
 	deviceFeatures.depthClamp = m_featureControl.deviceFeatures.depth_clamp;
 	deviceFeatures.depthBiasClamp = VK_TRUE;
+	deviceFeatures.computeShader = frameGenCapabilities.computeShader;
 
 	if (m_featureControl.deviceExtensions.pipeline_robustness)
 	{
