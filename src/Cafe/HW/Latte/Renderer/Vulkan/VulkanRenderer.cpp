@@ -1,4 +1,5 @@
 #include "Cafe/HW/Latte/Renderer/Vulkan/VulkanRenderer.h"
+#include "Cafe/HW/Latte/Renderer/Vulkan/FrameGenVk.h"
 #include "Cafe/HW/Latte/Renderer/Vulkan/VulkanAPI.h"
 #include "Cafe/HW/Latte/Renderer/Vulkan/LatteTextureVk.h"
 #include "Cafe/HW/Latte/Renderer/Vulkan/RendererShaderVk.h"
@@ -620,6 +621,13 @@ VulkanRenderer::VulkanRenderer()
 
 	// create logical device
 	m_indices = FindQueueFamilies(surface, m_physicalDevice);
+	const auto frameGenCapabilities = FrameGenVk::QueryCapabilities(m_physicalDevice, static_cast<uint32_t>(m_indices.graphicsFamily));
+	cemuLog_log(LogType::Force, "Frame generation Vulkan capabilities: compute={}, graphics-compute={}, rgba8-storage={}, rgba16f-storage={}, baseline={}",
+		frameGenCapabilities.computeShader,
+		frameGenCapabilities.graphicsQueueSupportsCompute,
+		frameGenCapabilities.rgba8StorageImage,
+		frameGenCapabilities.rgba16fStorageImage,
+		frameGenCapabilities.IsSupported());
 	std::set<int> uniqueQueueFamilies = { m_indices.graphicsFamily, m_indices.presentFamily };
 	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos = CreateQueueCreateInfos(uniqueQueueFamilies);
 	VkPhysicalDeviceFeatures deviceFeatures = {};
