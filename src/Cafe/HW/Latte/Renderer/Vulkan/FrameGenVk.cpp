@@ -90,4 +90,30 @@ namespace FrameGenVk
 		vkCmdDispatch(commandBuffer, groupCountX, groupCountY, groupCountZ);
 		return true;
 	}
+	bool RecordBlendDispatch(
+		VkCommandBuffer commandBuffer,
+		VkPipeline pipeline,
+		VkPipelineLayout pipelineLayout,
+		VkDescriptorSet descriptorSet,
+		uint32_t width,
+		uint32_t height,
+		float blendFactor)
+	{
+		if (commandBuffer == VK_NULL_HANDLE || pipeline == VK_NULL_HANDLE ||
+			pipelineLayout == VK_NULL_HANDLE || descriptorSet == VK_NULL_HANDLE ||
+			width == 0 || height == 0)
+			return false;
+
+		// blend.comp declares 8x8x1 local workgroups and one float push constant.
+		const uint32_t groupCountX = (width + 7u) / 8u;
+		const uint32_t groupCountY = (height + 7u) / 8u;
+
+		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline);
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE,
+			pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
+		vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_COMPUTE_BIT,
+			0, sizeof(float), &blendFactor);
+		vkCmdDispatch(commandBuffer, groupCountX, groupCountY, 1);
+		return true;
+	}
 }
