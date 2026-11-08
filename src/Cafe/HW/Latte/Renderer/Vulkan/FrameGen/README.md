@@ -28,10 +28,11 @@ Workgroup size: 8 x 8 x 1. Dispatch with
 `ceil(width / 8)` by `ceil(height / 8)` groups.
 
 The caller must transition sampled inputs to shader-read layout and the output
-to `VK_IMAGE_LAYOUT_GENERAL`, bind the descriptor set and push constants, then
-insert the appropriate compute-write to subsequent-read/present barrier.
-The helper intentionally does not guess Cemu's command-buffer lifecycle or
-insert barriers on the caller's behalf.
+to `VK_IMAGE_LAYOUT_GENERAL`, then insert the appropriate compute-write to
+subsequent-read/present barrier. `FrameGenVk::RecordBlendDispatch()` binds the
+compute pipeline and descriptor set, pushes the 32-bit blend factor, and
+calculates dispatch dimensions for the shader's 8x8 workgroups. It does not
+perform image transitions or guess Cemu's command-buffer lifecycle.
 
 ## Next steps
 
