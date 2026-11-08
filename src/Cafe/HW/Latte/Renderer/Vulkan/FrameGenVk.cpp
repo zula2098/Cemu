@@ -2,6 +2,7 @@
 #include "Cafe/HW/Latte/Renderer/Vulkan/VulkanAPI.h"
 
 #include <vector>
+#include <limits>
 
 namespace FrameGenVk
 {
@@ -34,6 +35,54 @@ namespace FrameGenVk
 		vkGetPhysicalDeviceFormatProperties(physicalDevice, VK_FORMAT_R16G16B16A16_SFLOAT, &rgba16fProperties);
 		result.rgba16fStorageImage = (rgba16fProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT) != 0;
 
+		return result;
+	}
+
+
+	VkResult CreateBlendPipelineLayout(
+		VkDevice device,
+		VkDescriptorSetLayout* descriptorSetLayout,
+		VkPipelineLayout* pipelineLayout)
+	{
+		if (descriptorSetLayout)
+			*descriptorSetLayout = VK_NULL_HANDLE;
+		if (pipelineLayout)
+			*pipelineLayout = VK_NULL_HANDLE;
+		if (device == VK_NULL_HANDLE || descriptorSetLayout == nullptr || pipelineLayout == nullptr)
+			return VK_ERROR_INITIALIZATION_FAILED;
+
+		const VkDescriptorSetLayoutBinding bindings[] = {
+			{ 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_COMPUTE_BIT, nullptr },
+			{ 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_COMPUTE_BIT, nullptr },
+			{ 2, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, VK_SHADER_STAGE_COMPUTE_BIT, nullptr }
+		};
+
+		VkDescriptorSetLayoutCreateInfo descriptorInfo{};
+		descriptorInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+		descriptorInfo.bindingCount = static_cast<uint32_t>(std::size(bindings));
+		descriptorInfo.pBindings = bindings;
+		VkResult result = vkCreateDescriptorSetLayout(device, &descriptorInfo, nullptr, descriptorSetLayout);
+		if (result != VK_SUCCESS)
+			return result;
+
+		VkPushConstantRange pushConstant{};
+		pushConstant.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
+		pushConstant.offset = 0;
+		pushConstant.size = sizeof(float);
+
+		VkPipelineLayoutCreateInfo pipelineInfo{};
+		pipelineInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+		pipelineInfo.setLayoutCount = 1;
+		pipelineInfo.pSetLayouts = descriptorSetLayout;
+		pipelineInfo.pushConstantRangeCount = 1;
+		pipelineInfo.pPushConstantRanges = &pushConstant;
+
+		result = vkCreatePipelineLayout(device, &pipelineInfo, nullptr, pipelineLayout);
+		if (result != VK_SUCCESS)
+		{
+			vkDestroyDescriptorSetLayout(device, *descriptorSetLayout, nullptr);
+			*descriptorSetLayout = VK_NULL_HANDLE;
+		}
 		return result;
 	}
 
@@ -105,8 +154,8 @@ namespace FrameGenVk
 			return false;
 
 		// blend.comp declares 8x8x1 local workgroups and one float push constant.
-		const uint32_t groupCountX = (width + 7u) / 8u;
-		const uint32_t groupCountY = (height + 7u) / 8u;
+		const uint32_t groupCountX = width / 8u + (width % 8u != 0u);
+		const uint32_t groupCountY = height / 8u + (height % 8u != 0u);
 
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline);
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE,
