@@ -37,4 +37,15 @@ namespace FrameGenVk
 		uint32_t groupCountX,
 		uint32_t groupCountY,
 		uint32_t groupCountZ = 1);
+	// Records the prototype blend shader using its documented descriptor and
+	// push-constant contract. The caller must transition images and keep them
+	// alive until the command buffer has completed.
+	bool RecordBlendDispatch(
+		VkCommandBuffer commandBuffer,
+		VkPipeline pipeline,
+		VkPipelineLayout pipelineLayout,
+		VkDescriptorSet descriptorSet,
+		uint32_t width,
+		uint32_t height,
+		float blendFactor);
 }
